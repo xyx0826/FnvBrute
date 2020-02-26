@@ -1,5 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using static FnvBrute.FnvHasher;
 
@@ -11,33 +13,39 @@ namespace FnvBrute
 
         static void Main(string[] args)
         {
-            Console.WriteLine("FnvBrute FNV-1 (32-bit) hash collider, https://github.com/xyx0826/FnvBrute");
-            Console.WriteLine("Usage: FnvBrute.exe {hash} {maxLength}");
-            Console.WriteLine("Hash should be a uint32_t in either decimal or hexadecimal form");
-            Console.WriteLine("MaxLength should be equal or greater than 2");
-            Console.WriteLine("Example: FnvBrute.exe 0x1234abcd 12\n");
+            uint match = 0;
+            int maxLength = 0;
 
-            // Parse hash param
-            uint match;
-            try
+            if (args.Length == 2)
             {
-                match = Convert.ToUInt32(args[0]);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error reading first argument (hash): " + e.Message);
-                return;
+                // Parse hash param
+                try
+                {
+                    match = (uint)new UInt32Converter().ConvertFromString(args[0]);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error reading first argument (hash): " + e.Message);
+                }
+
+                // Parse length param
+                try
+                {
+                    maxLength = (int)new Int32Converter().ConvertFromString(args[1]);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error reading second argument (maxLength): " + e.Message);
+                }
             }
 
-            // Parse length param
-            int maxLength;
-            try
+            if (args.Length < 2 || match == 0 || maxLength < 2)
             {
-                maxLength = Convert.ToInt32(args[1]);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error reading second argument (maxLength): " + e.Message);
+                Console.WriteLine("\nFnvBrute FNV-1 (32-bit) hash collider, https://github.com/xyx0826/FnvBrute");
+                Console.WriteLine("Usage: FnvBrute.exe {hash} {maxLength}");
+                Console.WriteLine("Hash should be a uint32_t in either decimal or hexadecimal form");
+                Console.WriteLine("MaxLength should be equal or greater than 2");
+                Console.WriteLine("Example: FnvBrute.exe 0x1234abcd 12\n");
                 return;
             }
 
@@ -52,7 +60,7 @@ namespace FnvBrute
             var exitEvent = new ManualResetEventSlim();
             exitEvent.Wait();
         }
-        
+
         static void CreateFnvThread(int length, uint match)
         {
             var thread = new Thread(() =>
